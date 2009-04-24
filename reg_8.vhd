@@ -24,7 +24,7 @@ entity reg_8 is
            CLR : in  STD_LOGIC);
 end reg_8;
 
-architecture Behavioral of reg_8 is
+architecture storage_register of reg_8 is
 -- FDCE: Single Data Rate D Flip-Flop with Asynchronous Clear and
 -- Clock Enable (posedge clk). All families.
 -- Xilinx HDL Libraries Guide, version 10.1.2
@@ -40,5 +40,5 @@ FDCE_1 : FDCE
              D => D(i) -- Data input
 	);
 	end generate DFFS;
-end Behavioral;
+end storage_register;
 

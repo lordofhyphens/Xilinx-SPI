@@ -4,16 +4,10 @@
 -- 
 -- Create Date:    01:18:45 04/24/2009 
 -- Design Name: SPI Engine
--- Module Name: clk_n - Behavioral 
+-- Module Name: timer_n
 -- Target Devices: Xilinx Spartan-II
 -- Tool versions: 
--- Description: 
---
--- Dependencies:  
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
+-- Description: FSM to count up to a certain number of cycles and then stop.
 --
 ----------------------------------------------------------------------------------
 library IEEE;
@@ -21,34 +15,41 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
----- Uncomment the following library declaration if instantiating
----- any Xilinx primitives in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
+library UNISIM;
+use UNISIM.VComponents.all;
 
 -- timing circuit that issues a signal every n clock cycles.
 entity timer_n is
-	generic (len : natural := 8); -- bit width of the counter.
-	port (C, CLR : in STD_LOGIC;
+	generic (len : natural := 8); -- Total number of cycles for the counter to count before stopping.
+	port (CLK, RES, EN : in STD_LOGIC;
 			Q : out STD_LOGIC);
 end timer_n;
 
 architecture archi of timer_n is 
 	shared variable count : natural := 0;
-	signal set: std_logic;
+	signal set: std_logic := '0';
 begin
-	process (C, CLR)
-		variable q: natural := 0;
+	counter: process (CLK, RES, EN)
 	begin
-		if (CLR='1' and rising_edge(C)) then -- Synchronous reset
-			count := 0;
-			set <= '0';
-		elsif (C'event and C='1') then
-			count := count + 1;
+		if (rising_edge(CLK)) then
+			if (EN = '1' and count < (len-1) ) then
+				count := count + 1;
+			end if;
+			if (RES = '1') then
+				count := 0;
+			end if;
+			if (count = (len - 1)) then 
+				set <= '1';
+			else
+				set <= '0';
+			end if;
+		else if (falling_edge(CLK)) then
+			if (RES = '1') then
+				count := 0;
+			end if;
 		end if;
-		if (count = (len-1)) then
-			set <= '1';
 		end if;
 	end process;
 	Q <= set;
+	output_guard: PULLDOWN port map(O=>Q);
 end archi;

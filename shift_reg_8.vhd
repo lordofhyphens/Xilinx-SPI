@@ -29,7 +29,7 @@ entity shift_reg is
            clk : in  STD_LOGIC);
 end shift_reg;
 
-architecture Behavioral of shift_reg is
+architecture shift_register of shift_reg is
 shared variable int_buffer: std_logic_vector ((width-1) downto 0);
 begin
 	main_op : process (clk) 
@@ -52,5 +52,5 @@ begin
 		end if;
 	end process;
 
-end Behavioral;
+end shift_register;
 

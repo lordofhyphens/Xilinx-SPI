@@ -33,7 +33,7 @@ entity buf_3state is
            en : in  STD_LOGIC);
 end buf_3state;
 
-architecture Behavioral of buf_3state is
+architecture tristate_buffer of buf_3state is
 begin
 	o <= i when (en = '1') else 'Z';
-end Behavioral;
+end tristate_buffer;

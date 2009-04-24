@@ -32,7 +32,7 @@ entity mux2_1 is
 	     o : out STD_LOGIC);
 end mux2_1;
 
-architecture Behavioral of mux2_1 is
+architecture multiplexer of mux2_1 is
 begin
 	sel: process (S, I0, I1) 
 	begin
@@ -42,5 +42,5 @@ begin
 			o <= I1;
 		end if;
 	end process;
-end Behavioral;
+end multiplexer;
 

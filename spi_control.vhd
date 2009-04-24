@@ -28,9 +28,10 @@ library UNISIM;
 use UNISIM.VComponents.all;
 
 entity spi_control is
-	 generic (width: natural := 8);
+	 generic (len: natural := 8);
     Port ( st : in STD_LOGIC;
            st_out : out  STD_LOGIC;
+			  done : out std_logic;
            clk : in  STD_LOGIC);
 end spi_control;
 
@@ -43,18 +44,25 @@ component buf_3state is
 end component;
 
 component timer_n is
-	generic (len : natural := 8);
-	port (C, CLR : in STD_LOGIC;
+	generic (len : natural := 8); -- Total number of cycles for the counter to count before stopping.
+	port (CLK, RES, EN : in STD_LOGIC;
 			Q : out STD_LOGIC);
 end component;
 
-signal counter: STD_LOGIC := '0';
-signal st_temp: STD_LOGIC := '0';
-signal st_buf: STD_LOGIC := '0';
+signal reset : std_logic := '0';
+signal int_done : std_logic := '0';
+
+signal st_3s : std_logic := '0';
+signal st_3s_out : std_logic := '0';
+
 begin
-	count_timer:timer_n generic map(8) port map(clk, counter, counter);
-	cutoff: buf_3state port map(st, st_temp, st_buf);
-	st_buf <= counter and st;
-	st_pulldown: PULLDOWN port map(O=>st_temp);
-	st_out <= st_temp;
+	reset <= (not(st));
+	st_3s <= (not(int_done) and st);
+	
+	count_timer:timer_n generic map(len) port map(CLK=>clk, RES=>reset,EN=>st, Q=>int_done);
+	cutoff: buf_3state port map(i=>st,o=>st_3s_out,en=>st_3s);
+	
+	st_pulldown: PULLDOWN port map(O=>st_3s_out);
+	st_out <= st_3s_out;
+	done <= int_done;
 end Behavioral;

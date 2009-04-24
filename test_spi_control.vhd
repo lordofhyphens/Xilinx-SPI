@@ -37,10 +37,11 @@ ARCHITECTURE behavior OF test_spi_control IS
     -- Component Declaration for the Unit Under Test (UUT)
  
     COMPONENT spi_control
-	 generic (width: natural := 8);
+	 generic (len: natural := 8);
     PORT(
          st : IN  std_logic;
          st_out : OUT  std_logic;
+			done : out std_logic;
          clk : IN  std_logic
         );
     END COMPONENT;
@@ -52,7 +53,7 @@ ARCHITECTURE behavior OF test_spi_control IS
 
  	--Outputs
    signal st_out : std_logic;
-
+	signal done :std_logic;
    -- Clock period definitions
    constant clk_period : time := 1ns;
  
@@ -64,6 +65,7 @@ BEGIN
 			PORT MAP (
           st => st,
           st_out => st_out,
+			 done => done, 
           clk => clk
         );
 
@@ -85,7 +87,7 @@ BEGIN
 
       wait for clk_period*10;
 		st <= '1';
-		wait for clk_period*8;
+		wait for clk_period*15;
 		st <= '0';
 		wait for clk_period;
 		st <= '1';

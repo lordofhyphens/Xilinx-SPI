@@ -90,7 +90,7 @@ component mux2_1 is
 end component;
 
 component spi_control is
-	 generic (width: natural := 8);
+	 generic (len: natural := 8);
     Port ( st : in  STD_LOGIC;
            st_out : out  STD_LOGIC;
            clk : in  STD_LOGIC);

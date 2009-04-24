@@ -68,7 +68,7 @@ ARCHITECTURE behavior OF test_spi_engine IS
    signal DATA_OUT : std_logic_vector(7 downto 0);
 	signal DATA_OUT_1 : std_logic_vector(7 downto 0);
 	
-	shared variable clk_period : time := 1 ns;
+	shared variable clk_period : time := 10 ns;
  
 BEGIN
  

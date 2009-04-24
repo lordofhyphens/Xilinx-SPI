@@ -39,8 +39,9 @@ ARCHITECTURE behavior OF test_timer_n IS
  
     COMPONENT timer_n
     PORT(
-         C : IN  std_logic;
-         CLR : IN  std_logic;
+	      en: in std_logic;
+         CLK : IN  std_logic;
+         RES : IN  std_logic;
          Q : OUT  std_logic
         );
     END COMPONENT;
@@ -48,7 +49,8 @@ ARCHITECTURE behavior OF test_timer_n IS
 
    --Inputs
    signal C : std_logic := '0';
-   signal CLR : std_logic := '0';
+   signal RES : std_logic := '0';
+	signal en: std_logic:='0';
 
  	--Outputs
    signal Q : std_logic;
@@ -59,9 +61,10 @@ BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: timer_n PORT MAP (
-          C => C,
-          CLR => Q,
-          Q => Q
+          CLK => C,
+          RES => RES,
+          Q => Q,
+			 EN => en
         );
  
    -- No clocks detected in port list. Replace <clock> below with 
@@ -83,7 +86,12 @@ BEGIN
       wait for 100ns;	
 
       wait for C_period*10;
-
+		en <= '1';
+		wait for C_period*10;
+		RES <= '1';
+		wait for C_period;
+		RES <= '0';
+		wait for C_period;
       -- insert stimulus here 
 
       wait;

@@ -34,7 +34,7 @@ entity clk_gen is
 end clk_gen;
 
 
-architecture Behavioral of clk_gen is
+architecture clock_generator of clk_gen is
 
 function To_Integer(z : std_logic_vector (3 downto 0))
 	return integer is 
@@ -84,5 +84,5 @@ begin
 		end if;
 	end process;
 
-end Behavioral;
+end clock_generator;
 
