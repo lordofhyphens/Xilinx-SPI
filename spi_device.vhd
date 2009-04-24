@@ -1,16 +1,15 @@
 ----------------------------------------------------------------------------------
 -- Company: SIUC ECE428
 -- Engineer: Joseph Lenox
--- 
 -- Create Date:    14:47:55 04/17/2009 
 -- Design Name: spi_engine
 -- Module Name:    spi_master - Behavioral 
 -- Project Name: 
 -- Target Devices: 
 -- Tool versions: 
--- Description: Hardware implementation of SPI Bus.
+-- Description: Flexible implementation of SPI Bus for Xilinx FPGAs.
 --
--- Dependencies: buf_3state, mux2_1, in_out, shift_reg, reg_8
+-- Dependencies: buf_3state, mux2_1, in_out, shift_reg, reg_8, spi_control
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -23,15 +22,27 @@ library UNISIM;
 use UNISIM.VComponents.all;
 
 entity spi_device is
-	 generic(width: integer := 8);
-    Port ( MISO : inout  STD_LOGIC;
+	 generic(-- Width of the TX/RX registers.
+	         width: natural := 8;
+	         -- This specifies the clock rate (based on the host clock) that this device
+				-- will use as its serial clock when it is acting as master.
+	         clock_divisor : natural := 4);
+    Port ( -- Master In, Slave Out. 
+	        MISO : inout  STD_LOGIC;
+			  -- Master Out, Slave In.
            MOSI : inout  STD_LOGIC;
+			  -- Slave Select. This will be pulled low for communication.
            SS : inout  STD_LOGIC;
+			  -- Serial Clock. This is an input when the circuit is a slave.
            SCLK : inout  STD_LOGIC;
+			  -- Data from this device to be transferred. 
            DATA : in  STD_LOGIC_VECTOR ((width-1) downto 0);
+			  -- Data received from a remote device.
 			  DATA_OUT: out STD_LOGIC_VECTOR ((width-1) downto 0);
+			  -- External clock from host.
            CLK : in  STD_LOGIC;
-			  st: in STD_LOGIC); -- signifies that this side is initiating the transfer.
+			  -- Assume master and start data transfer.
+			  st: in STD_LOGIC);
 end spi_device;
 
 architecture Behavioral of spi_device is
