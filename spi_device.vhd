@@ -46,16 +46,20 @@ entity spi_device is
 end spi_device;
 
 architecture Behavioral of spi_device is
+
 component shift_reg is
 	 generic (initial : integer := 0;
 	          width: integer := 8);
-    Port ( s_in : in  STD_LOGIC;
+    Port ( serial_in : in  STD_LOGIC;
+	        serial_out: out STD_LOGIC;
+			  -- 0 for right shift, 1 for left shift.
 			  dir : in STD_LOGIC;
            load : in  STD_LOGIC;
-           p_load : in  STD_LOGIC_VECTOR ((width-1) downto 0);
-			  p_out: out STD_LOGIC_VECTOR ((width-1) downto 0);
-           s_out : out  STD_LOGIC;
-           clk : in  STD_LOGIC);
+           D : in  STD_LOGIC_VECTOR ((width-1) downto 0);
+			  Q : out STD_LOGIC_VECTOR ((width-1) downto 0);
+           EN : in STD_LOGIC;
+			  RES : in STD_LOGIC;
+           CLK : in  STD_LOGIC);
 end component;
 
 component clk_gen is
@@ -150,15 +154,19 @@ begin
 	MOSI_in_3s: buf_3state port map(MOSI, mosi_3s_to_mux, int_st);
 	MOSI_mux: mux2_1 port map(mosi_3s_to_mux, '0', int_st, mosi_mux_to_buf);
 	MOSI_out_3s: buf_3state port map(mosi_buf_to_safe, MOSI, int_st);
-	MOSI_buf: shift_reg generic map(width=>8) port map(mosi_mux_to_buf,'0',not(int_ss),tx_buf_to_mux,mosi_buf_to_receive_buf,mosi_buf_to_safe,int_sclk);
+	MOSI_buf: shift_reg generic map(width=>8) port map(serial_in=> mosi_mux_to_buf, dir=>'0', load=>(not(int_ss)), 
+	                                                   D=> tx_buf_to_mux, Q=> mosi_buf_to_receive_buf, 
+																		serial_out=>mosi_buf_to_safe, CLK=> int_sclk, EN=>'1', RES=>'0');
 	
 	MOSI_pull: PULLDOWN port map(O=>MOSI);
 
 --MOSI, Master In, Slave Out
-	MISO_in: buf_3state port map(MISO, miso_3s_to_mux, not(int_st));
-	MISO_mux: mux2_1 port map(miso_3s_to_mux, '0', not(int_st), miso_mux_to_buf);
-	MISO_out: buf_3state port map(miso_buf_to_safe, MISO, not(int_st));
-	MISO_buf: shift_reg generic map(width=>8) port map(miso_mux_to_buf,'0',int_ss,tx_buf_to_mux,miso_buf_to_receive_buf,miso_buf_to_safe,int_sclk);
+	MISO_in: buf_3state port map(MISO, miso_3s_to_mux, (not(int_st)));
+	MISO_mux: mux2_1 port map(miso_3s_to_mux, '0', (not(int_st)), miso_mux_to_buf);
+	MISO_out: buf_3state port map(miso_buf_to_safe, MISO, (not(int_st)));
+	MISO_buf: shift_reg generic map(width=>8) port map(serial_in=> miso_mux_to_buf, serial_out=> miso_buf_to_safe, dir=> '0',
+	                                                   load=> int_ss, D=> tx_buf_to_mux, Q=> miso_buf_to_receive_buf, CLK=> int_sclk,
+																		EN=> '1', RES=>'0');
 
 	MISO_pull: PULLDOWN port map(O=>MISO);
 
