@@ -69,7 +69,7 @@ component clk_gen is
            div : in  STD_LOGIC_VECTOR (3 downto 0));
 end component;
 
-component reg_8 is 
+component reg_n is 
 	 generic (width: natural := 7);
     Port ( D : in  STD_LOGIC_VECTOR (width downto 0);
            Clk : in  STD_LOGIC;
@@ -110,6 +110,7 @@ end component;
 
 -- internal SCLK (serial clock) and SS (slave select) signals. 
 signal int_st: STD_LOGIC;
+signal int_st_inv: STD_LOGIC;
 
 signal int_sclk : STD_LOGIC;
 signal ss_to_mux : STD_LOGIC;
@@ -135,11 +136,14 @@ signal tx_buf_to_mux: STD_LOGIC_VECTOR((width-1) downto 0);
 signal mux_to_receive_buf: STD_LOGIC_VECTOR((width-1) downto 0);
 
 begin
+
+	int_st_inv <= not(int_st);
 -- Control for the ST (start) behavior.
 	ST_switch : spi_control port map(st, int_st, sclk);
 -- In/out behavior for SS
-	SS_external: in_out port map(SS, ss_to_mux, int_st);
-	SS_mux : mux2_1 port map (not(int_st), ss_to_mux, int_st, int_ss);
+	SS_external: buf_3state port map(SS, ss_to_mux, int_st_inv);
+	SS_to_ext: buf_3state port map(int_ss, SS, int_st);
+	SS_mux : mux2_1 port map (ss_to_mux, '0', int_st, int_ss);
 	SS_pullup: PULLUP port map (O=>SS);	
 	
 -- In/out behavior for SCLK
@@ -151,30 +155,30 @@ begin
 	SCLK_gen: clk_gen port map(clk, int_st, sclk_from_clkgen, X"4"); -- sclk is clk / 4
 	
 --MOSI, Master Out, Slave In
-	MOSI_in_3s: buf_3state port map(MOSI, mosi_3s_to_mux, int_st);
+	MOSI_in_3s: buf_3state port map(i=> MOSI, o=> mosi_3s_to_mux, en=> int_st_inv);
 	MOSI_mux: mux2_1 port map(mosi_3s_to_mux, '0', int_st, mosi_mux_to_buf);
 	MOSI_out_3s: buf_3state port map(mosi_buf_to_safe, MOSI, int_st);
-	MOSI_buf: shift_reg generic map(width=>8) port map(serial_in=> mosi_mux_to_buf, dir=>'0', load=>(not(int_ss)), 
-	                                                   D=> tx_buf_to_mux, Q=> mosi_buf_to_receive_buf, 
-																		serial_out=>mosi_buf_to_safe, CLK=> int_sclk, EN=>'1', RES=>'0');
-	
+	MOSI_buf: shift_reg generic map(width=>8)
+ 	                    port map(serial_in=> mosi_mux_to_buf, dir=>'0', load=>int_st, 
+	                             D=> tx_buf_to_mux, Q=> mosi_buf_to_receive_buf, 
+								        serial_out=>mosi_buf_to_safe, CLK=> int_sclk, EN=>'1', RES=>'0');
 	MOSI_pull: PULLDOWN port map(O=>MOSI);
 
---MOSI, Master In, Slave Out
-	MISO_in: buf_3state port map(MISO, miso_3s_to_mux, (not(int_st)));
-	MISO_mux: mux2_1 port map(miso_3s_to_mux, '0', (not(int_st)), miso_mux_to_buf);
-	MISO_out: buf_3state port map(miso_buf_to_safe, MISO, (not(int_st)));
-	MISO_buf: shift_reg generic map(width=>8) port map(serial_in=> miso_mux_to_buf, serial_out=> miso_buf_to_safe, dir=> '0',
-	                                                   load=> int_ss, D=> tx_buf_to_mux, Q=> miso_buf_to_receive_buf, CLK=> int_sclk,
-																		EN=> '1', RES=>'0');
-
+--MISO, Master In, Slave Out
+	MISO_in: buf_3state port map(i=> MISO, o=> miso_3s_to_mux, en=> int_st);
+	MISO_mux: mux2_1 port map('0', miso_3s_to_mux, int_st, miso_mux_to_buf);
+	MISO_out: buf_3state port map(miso_buf_to_safe, MISO, int_st_inv);
+	MISO_buf: shift_reg generic map(width=>8) 
+	                    port map(serial_in=> miso_mux_to_buf, serial_out=> miso_buf_to_safe, dir=> '0',
+	                             load=> int_st_inv, D=> tx_buf_to_mux, Q=> miso_buf_to_receive_buf, CLK=> int_sclk,
+								        EN=> '1', RES=>'0');
 	MISO_pull: PULLDOWN port map(O=>MISO);
 
 -- Receive buffer
 	MISO_MOSI_RX_mux: mux2_1n generic map(width=>width) port map (miso_buf_to_receive_buf, mosi_buf_to_receive_buf, mux_to_receive_buf, int_st);
-	RX_buf: reg_8 generic map(width=>(width-1)) port map(mux_to_receive_buf, clk, DATA_OUT, '1', '0');
+	RX_buf: reg_n generic map(width=>(width-1)) port map(mux_to_receive_buf, clk, DATA_OUT, '1', '0');
 
 -- Transmit buffer
---	MISO_MOSI_TX_dmux: dmux2_1n generic map(width=>width) port map (mux_to_miso_buf, mux_to_mosi_buf, tx_buf_to_mux, not(int_st));
-	TX_buf: reg_8 generic map(width=>(width-1)) port map(DATA, clk, tx_buf_to_mux, '1', '0');
+	TX_buf: reg_n generic map(width=>(width-1)) port map(DATA, clk, tx_buf_to_mux, '1', '0');
+
 end Behavioral;

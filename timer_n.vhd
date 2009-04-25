@@ -26,10 +26,10 @@ entity timer_n is
 end timer_n;
 
 architecture archi of timer_n is 
-	shared variable count : natural := 0;
 	signal set: std_logic := '0';
 begin
 	counter: process (CLK, RES, EN)
+		variable count : natural := 0;
 	begin
 		if (rising_edge(CLK)) then
 			if (EN = '1' and count < (len-1) ) then

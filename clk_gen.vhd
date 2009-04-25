@@ -23,8 +23,8 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 ---- Uncomment the following library declaration if instantiating
 ---- any Xilinx primitives in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
+library UNISIM;
+use UNISIM.VComponents.all;
 
 entity clk_gen is
     Port ( clk : in  STD_LOGIC;
@@ -83,6 +83,7 @@ begin
 			end if;
 		end if;
 	end process;
+	SCLK_pull: PULLDOWN port map(O=>clk_out);
 
 end clock_generator;
 

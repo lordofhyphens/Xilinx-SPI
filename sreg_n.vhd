@@ -43,7 +43,7 @@ begin
 			if (load = '1') then
 				int_buffer := D;
 			end if;
-			if (load = '0') then
+			if (load = '0' or load = 'L') then
 				if (dir = '1') then
 					serial_out <= int_buffer(width-1);
 					int_buffer(width-1 downto 1) := int_buffer(width-2 downto 0);

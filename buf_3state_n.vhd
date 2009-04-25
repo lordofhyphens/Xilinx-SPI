@@ -1,21 +1,11 @@
 ----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
+-- Company: SIUC ECE428
+-- Engineer: Joseph Lenox
 -- 
 -- Create Date:    20:43:05 04/22/2009 
--- Design Name: 
+-- Design Name: 	SPI Engine
 -- Module Name:    buf_3state_n - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
+-- Description:  Tri-State buffer across a bus.
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
